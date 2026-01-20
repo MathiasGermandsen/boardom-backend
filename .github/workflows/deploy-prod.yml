@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy-prod:
-    runs-on: self-hosted
+    runs-on: classroom
 
     concurrency:
       group: deploy-backend-prod
