@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "boardomapi", "boardomapi\boardomapi.csproj", "{6A17B2B8-1269-45D3-B7BD-C4294A0E87F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0E5445D9-C479-404F-898A-78816B0B8691}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A17B2B8-1269-45D3-B7BD-C4294A0E87F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A17B2B8-1269-45D3-B7BD-C4294A0E87F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A17B2B8-1269-45D3-B7BD-C4294A0E87F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A17B2B8-1269-45D3-B7BD-C4294A0E87F5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

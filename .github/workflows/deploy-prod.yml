@@ -1,0 +1,54 @@
+name: Deploy Backend (PROD)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy-prod:
+    runs-on: [self-hosted, k8s, classroom]
+
+    concurrency:
+      group: deploy-backend-prod
+      cancel-in-progress: true
+
+    env:
+      NAMESPACE: boardom-backend
+      DEPLOYMENT_NAME: backend
+      CONTAINER_NAME: backend
+      IMAGE_NAME: ghcr.io/${{ github.repository }}
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push Docker image
+        run: |
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+          docker push $IMAGE_NAME:$IMAGE_TAG
+
+      - name: Set kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > ~/.kube/config
+
+      - name: Deploy to Kubernetes (PROD)
+        run: |
+          kubectl set image deployment/$DEPLOYMENT_NAME \
+            $CONTAINER_NAME=$IMAGE_NAME:$IMAGE_TAG \
+            -n $NAMESPACE
+
+          kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE
