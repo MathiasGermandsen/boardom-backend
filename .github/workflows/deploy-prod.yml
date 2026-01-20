@@ -36,6 +36,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push Docker image
+        working-directory: boardomapi
         run: |
           IMAGE_NAME="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           IMAGE_TAG="${GITHUB_SHA}"
