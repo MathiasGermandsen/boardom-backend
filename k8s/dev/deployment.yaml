@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: boardom-backend-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boardom-backend-dev
+  template:
+    metadata:
+      labels:
+        app: boardom-backend-dev
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/Mercantec-GHC/h3-boardom-backend-h3-eux:dev
+          ports:
+            - containerPort: 8080
