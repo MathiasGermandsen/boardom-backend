@@ -37,10 +37,13 @@ jobs:
 
       - name: Build & push Docker image
         run: |
-          docker build \
-            -t $IMAGE_NAME:$IMAGE_TAG \
-            .
+          IMAGE_NAME="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_TAG="${GITHUB_SHA}"
+
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG
+
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: Configure kubeconfig
         run: |
