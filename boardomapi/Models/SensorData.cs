@@ -23,7 +23,4 @@ public class SensorData
   public double Light { get; set; }
 
   public double Moisture { get; set; }
-
-  // Navigation property
-  public Device? Device { get; set; }
 }

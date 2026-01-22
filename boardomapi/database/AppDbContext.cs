@@ -37,10 +37,6 @@ public class AppDbContext : DbContext
       entity.Property(e => e.Pressure).HasColumnName("pressure");
       entity.Property(e => e.Light).HasColumnName("light");
       entity.Property(e => e.Moisture).HasColumnName("moisture");
-
-      entity.HasOne(e => e.Device)
-          .WithMany()
-          .HasForeignKey(e => e.DeviceId);
     });
 
     modelBuilder.Entity<Group>(entity =>
