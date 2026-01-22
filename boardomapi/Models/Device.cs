@@ -8,7 +8,7 @@ public class Device
   public string DeviceId { get; set; } = string.Empty;
 
   [Required]
-  [MaxLength(20)]
+  [MaxLength(100)]
   public string FriendlyName { get; set; } = string.Empty;
 
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
