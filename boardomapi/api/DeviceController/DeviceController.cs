@@ -3,7 +3,6 @@ using boardomapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace boardomapi.Api.DeviceController;
 
 [ApiController]
