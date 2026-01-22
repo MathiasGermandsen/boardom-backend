@@ -9,8 +9,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-var dataSource = DbConfig.CreateDataSource(connectionString);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+}
+var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(dataSource));
