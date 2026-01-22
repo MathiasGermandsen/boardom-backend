@@ -1,6 +1,7 @@
 using boardomapi.Database;
 using boardomapi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace boardomapi.Api.DataController;
 
@@ -21,6 +22,12 @@ public class DataController : ControllerBase
     if (string.IsNullOrWhiteSpace(request.DeviceId))
     {
       return BadRequest(new { error = "DeviceId is required" });
+    }
+
+    var deviceExists = await _db.Devices.AnyAsync(d => d.DeviceId == request.DeviceId);
+    if (!deviceExists)
+    {
+      return NotFound(new { error = "Device not found", deviceId = request.DeviceId });
     }
 
     var sensorData = new SensorData
