@@ -17,11 +17,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Apply migrations automatically on startup (optional - can remove in production)
+// Apply pending EF Core migrations automatically on startup (optional - can remove in production)
 using (var scope = app.Services.CreateScope())
 {
   var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-  db.Database.EnsureCreated();
+  db.Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.
