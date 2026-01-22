@@ -1,16 +1,38 @@
+using boardomapi.Database;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+var dataSource = DbConfig.CreateDataSource(connectionString);
+builder.Services.AddSingleton(dataSource);
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(dataSource));
+
 var app = builder.Build();
+
+// Apply migrations automatically on startup (optional - can remove in production)
+using (var scope = app.Services.CreateScope())
+{
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+  db.Database.EnsureCreated();
+}
 
 // Configure the HTTP request pipeline.
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Redirect root to swagger
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+app.MapControllers();
 
 
 var summaries = new[]
