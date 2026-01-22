@@ -46,5 +46,37 @@ public class DeviceController : ControllerBase
 
     return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
   }
+
+  [HttpGet("{deviceId}")]
+  public async Task<IActionResult> GetDeviceAsync([FromRoute] string deviceId)
+  {
+    if (string.IsNullOrWhiteSpace(deviceId))
+    {
+      return BadRequest(new { error = "DeviceId is required" });
+    }
+
+    var device = await _db.Devices
+      .AsNoTracking()
+      .FirstOrDefaultAsync(d => d.DeviceId == deviceId);
+
+    if (device == null)
+    {
+      return NotFound(new { error = "Device not found", deviceId });
+    }
+
+    var sensorData = await _db.SensorReadings
+      .AsNoTracking()
+      .Where(s => s.DeviceId == deviceId)
+      .OrderByDescending(s => s.DateAdded)
+      .ToListAsync();
+
+    return Ok(new
+    {
+      device.DeviceId,
+      device.FriendlyName,
+      device.CreatedAt,
+      SensorReadings = sensorData
+    });
+  }
 }
 
