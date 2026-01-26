@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+  throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
 }
 var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
@@ -38,6 +38,11 @@ app.UseSwaggerUI();
 
 // Redirect root to swagger
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+// Health check endpoint for Docker/Kubernetes
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+    .WithName("HealthCheck")
+    .WithOpenApi();
 
 app.MapControllers();
 
