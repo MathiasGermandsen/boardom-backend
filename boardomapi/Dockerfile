@@ -7,15 +7,14 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["boardomapi/boardomapi.csproj", "boardomapi/"]
-RUN dotnet restore "boardomapi/boardomapi.csproj"
+COPY ["boardomapi.csproj", "./"]
+RUN dotnet restore "boardomapi.csproj"
 COPY . .
-WORKDIR "/src/boardomapi"
-RUN dotnet build "./boardomapi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "boardomapi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./boardomapi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "boardomapi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
