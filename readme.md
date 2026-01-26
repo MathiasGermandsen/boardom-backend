@@ -94,11 +94,12 @@
 
 ### Device Controller
 
-| Method | Endpoint            | Description                              |
-| ------ | ------------------- | ---------------------------------------- |
-| `POST` | `/Device/addDevice` | Register a new device or update existing |
+| Method | Endpoint             | Description                              |
+| ------ | -------------------- | ---------------------------------------- |
+| `POST` | `/Device/addDevice`  | Register a new device or update existing |
+| `GET`  | `/Device/{deviceId}` | Get device details with sensor readings  |
 
-**Request Body:**
+**Add Device Request Body:**
 ```json
 {
   "deviceId": "sensor-001",
@@ -106,12 +107,33 @@
 }
 ```
 
-**Response (201 Created):**
+**Add Device Response (201 Created):**
 ```json
 {
   "message": "Device registered",
   "deviceId": "sensor-001",
   "friendlyName": "Living Room Sensor"
+}
+```
+
+**Get Device Response (200 OK):**
+```json
+{
+  "deviceId": "sensor-001",
+  "friendlyName": "Living Room Sensor",
+  "createdAt": "2026-01-22T10:00:00Z",
+  "sensorReadings": [
+    {
+      "pKey": 1,
+      "deviceId": "sensor-001",
+      "dateAdded": "2026-01-22T10:30:00Z",
+      "temperature": 22.5,
+      "humidity": 45.0,
+      "pressure": 1013.25,
+      "light": 500.0,
+      "moisture": 30.0
+    }
+  ]
 }
 ```
 
