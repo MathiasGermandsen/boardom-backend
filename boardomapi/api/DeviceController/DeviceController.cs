@@ -106,6 +106,6 @@ public class DeviceController : ControllerBase
     _db.Devices.Remove(device);
     await _db.SaveChangesAsync();
 
-    return Ok("Device Deleted");
+    return NoContent();
   }
 }
