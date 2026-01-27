@@ -94,15 +94,6 @@ public class DeviceController : ControllerBase
       return NotFound(new { error = "Device not found", deviceId });
     }
 
-    var sensorReadings = await _db.SensorReadings
-      .Where(s => s.DeviceId == deviceId)
-      .ToListAsync();
-
-    if (sensorReadings.Count > 0)
-    {
-      _db.SensorReadings.RemoveRange(sensorReadings);
-    }
-
     _db.Devices.Remove(device);
     await _db.SaveChangesAsync();
 
