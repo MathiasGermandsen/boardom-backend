@@ -78,5 +78,34 @@ public class DeviceController : ControllerBase
       SensorReadings = sensorData
     });
   }
-}
 
+
+  [HttpDelete("{deviceId}")]
+  public async Task<IActionResult> DeleteDeviceAsync([FromRoute] string deviceId)
+  {
+    if (string.IsNullOrWhiteSpace(deviceId))
+    {
+      return BadRequest(new { error = "DeviceId is required" });
+    }
+
+    var device = await _db.Devices.FindAsync(deviceId);
+    if (device == null)
+    {
+      return NotFound(new { error = "Device not found", deviceId });
+    }
+
+    var sensorReadings = await _db.SensorReadings
+      .Where(s => s.DeviceId == deviceId)
+      .ToListAsync();
+
+    if (sensorReadings.Count > 0)
+    {
+      _db.SensorReadings.RemoveRange(sensorReadings);
+    }
+
+    _db.Devices.Remove(device);
+    await _db.SaveChangesAsync();
+
+    return Ok("Device Deleted");
+  }
+}
