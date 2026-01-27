@@ -98,20 +98,15 @@ public class DeviceController : ControllerBase
     await using var transaction = await _db.Database.BeginTransactionAsync();
     try
     {
-      // Delete associated sensor readings first
-      var sensorReadings = await _db.SensorReadings
+      // Delete associated sensor readings first (directly in database)
+      await _db.SensorReadings
         .Where(s => s.DeviceId == deviceId)
-        .ToListAsync();
-
-      if (sensorReadings.Count > 0)
-      {
-        _db.SensorReadings.RemoveRange(sensorReadings);
-      }
+        .ExecuteDeleteAsync();
 
       // Delete the device
       _db.Devices.Remove(device);
-      
       await _db.SaveChangesAsync();
+      
       await transaction.CommitAsync();
 
       return NoContent();
