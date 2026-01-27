@@ -94,8 +94,19 @@ public class DeviceController : ControllerBase
       return NotFound(new { error = "Device not found", deviceId });
     }
 
+    // Use transaction to ensure atomicity of deletion operations
+    await using var transaction = await _db.Database.BeginTransactionAsync();
+    
+    // Delete associated sensor readings first (directly in database)
+    await _db.SensorReadings
+      .Where(s => s.DeviceId == deviceId)
+      .ExecuteDeleteAsync();
+
+    // Delete the device
     _db.Devices.Remove(device);
     await _db.SaveChangesAsync();
+    
+    await transaction.CommitAsync();
 
     return NoContent();
   }
