@@ -24,17 +24,15 @@ public class DeviceController : ControllerBase
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
     }
 
-    // Check if device already exists
     var existing = await _db.Devices.FindAsync(request.DeviceId);
     if (existing != null)
     {
-      // Update friendly name if device exists
+
       existing.FriendlyName = request.FriendlyName;
       await _db.SaveChangesAsync();
       return Ok(new { message = "Device updated", deviceId = existing.DeviceId, friendlyName = existing.FriendlyName });
     }
 
-    // Create new device
     var device = new Device
     {
       DeviceId = request.DeviceId,
