@@ -24,11 +24,19 @@ public class DeviceController : ControllerBase
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
     }
 
-    // Check if device already exists
-    var existing = await _db.Devices.FindAsync(request.DeviceId);
+    // Check if device already exists (including soft-deleted devices)
+    var existing = await _db.Devices
+      .IgnoreQueryFilters()
+      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
+
     if (existing != null)
     {
-      // Update friendly name if device exists
+      // Re-activate if previously soft-deleted
+      if (existing.IsDeleted)
+      {
+        existing.IsDeleted = false;
+      }
+
       existing.FriendlyName = request.FriendlyName;
       await _db.SaveChangesAsync();
       return Ok(new { message = "Device updated", deviceId = existing.DeviceId, friendlyName = existing.FriendlyName });
@@ -80,7 +88,7 @@ public class DeviceController : ControllerBase
   }
 
 
-  [HttpDelete("{deviceId}")]
+  [HttpPost("delete/{deviceId}")]
   public async Task<IActionResult> DeleteDeviceAsync([FromRoute] string deviceId)
   {
     if (string.IsNullOrWhiteSpace(deviceId))
@@ -94,7 +102,7 @@ public class DeviceController : ControllerBase
       return NotFound(new { error = "Device not found", deviceId });
     }
 
-    _db.Devices.Remove(device);
+    device.IsDeleted = true;
     await _db.SaveChangesAsync();
 
     return NoContent();
