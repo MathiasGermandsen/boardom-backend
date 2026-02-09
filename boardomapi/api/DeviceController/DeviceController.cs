@@ -24,14 +24,12 @@ public class DeviceController : ControllerBase
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
     }
 
-    // Check if device already exists (including soft-deleted devices)
     var existing = await _db.Devices
       .IgnoreQueryFilters()
       .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
 
     if (existing != null)
     {
-      // Re-activate if previously soft-deleted
       if (existing.IsDeleted)
       {
         existing.IsDeleted = false;
@@ -42,7 +40,6 @@ public class DeviceController : ControllerBase
       return Ok(new { message = "Device updated", deviceId = existing.DeviceId, friendlyName = existing.FriendlyName });
     }
 
-    // Create new device
     var device = new Device
     {
       DeviceId = request.DeviceId,
