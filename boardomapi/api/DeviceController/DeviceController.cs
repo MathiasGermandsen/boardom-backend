@@ -24,9 +24,16 @@ public class DeviceController : ControllerBase
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
     }
 
-    var existing = await _db.Devices.FindAsync(request.DeviceId);
+    var existing = await _db.Devices
+      .IgnoreQueryFilters()
+      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
+
     if (existing != null)
     {
+      if (existing.IsDeleted)
+      {
+        existing.IsDeleted = false;
+      }
 
       existing.FriendlyName = request.FriendlyName;
       await _db.SaveChangesAsync();
@@ -76,5 +83,25 @@ public class DeviceController : ControllerBase
       SensorReadings = sensorData
     });
   }
-}
 
+
+  [HttpPost("delete/{deviceId}")]
+  public async Task<IActionResult> DeleteDeviceAsync([FromRoute] string deviceId)
+  {
+    if (string.IsNullOrWhiteSpace(deviceId))
+    {
+      return BadRequest(new { error = "DeviceId is required" });
+    }
+
+    var device = await _db.Devices.FindAsync(deviceId);
+    if (device == null)
+    {
+      return NotFound(new { error = "Device not found", deviceId });
+    }
+
+    device.IsDeleted = true;
+    await _db.SaveChangesAsync();
+
+    return NoContent();
+  }
+}

@@ -109,7 +109,7 @@ public class GroupController : ControllerBase
     var device = await _db.Devices.FindAsync(request.DeviceId);
     if (device == null)
     {
-      return NotFound(new { error = "Device not found" });
+      return NotFound(new { error = "Device not found", deviceId = request.DeviceId });
     }
 
     // Check if device is already in the group

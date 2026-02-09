@@ -22,7 +22,9 @@ public class AppDbContext : DbContext
       entity.HasKey(e => e.DeviceId);
       entity.Property(e => e.DeviceId).HasColumnName("device_id");
       entity.Property(e => e.FriendlyName).HasColumnName("friendly_name").HasMaxLength(100);
+      entity.Property(e => e.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
       entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
+      entity.HasQueryFilter(e => !e.IsDeleted);
     });
 
     modelBuilder.Entity<SensorData>(entity =>
@@ -47,6 +49,7 @@ public class AppDbContext : DbContext
       entity.Property(e => e.GroupName).HasColumnName("group_name").HasMaxLength(100);
       entity.Property(e => e.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
       entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
+      entity.HasQueryFilter(e => !e.IsDeleted);
     });
 
     modelBuilder.Entity<DeviceGroup>(entity =>
@@ -64,7 +67,8 @@ public class AppDbContext : DbContext
 
       entity.HasOne(e => e.Device)
           .WithMany()
-          .HasForeignKey(e => e.DeviceId);
+          .HasForeignKey(e => e.DeviceId)
+          .IsRequired(false);
     });
   }
 }
