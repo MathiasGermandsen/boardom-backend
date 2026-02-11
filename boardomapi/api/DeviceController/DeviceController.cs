@@ -104,4 +104,20 @@ public class DeviceController : ControllerBase
 
     return NoContent();
   }
+
+  [HttpGet("getAll")]
+  public async Task<ActionResult> GetAllDevicesAsync()
+  {
+    var devices = await _db.Devices
+      .AsNoTracking()
+      .Select(d => new
+      {
+        d.DeviceId,
+        d.FriendlyName,
+        d.CreatedAt
+      })
+      .ToListAsync();
+
+    return Ok(devices);
+  }
 }

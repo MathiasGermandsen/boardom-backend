@@ -90,6 +90,22 @@ public class GroupController : ControllerBase
     });
   }
 
+  [HttpGet("getAll")]
+  public async Task<ActionResult> GetAllGroupsAsync()
+  {
+    var groups = await _db.Groups
+      .AsNoTracking()
+      .Select(g => new
+      {
+        g.GroupId,
+        g.GroupName,
+        g.CreatedAt
+      })
+      .ToListAsync();
+
+    return Ok(groups);
+  }
+
   [HttpPost("addDevice")]
   public async Task<IActionResult> AddDeviceToGroup([FromBody] AddDeviceToGroupRequest request)
   {
