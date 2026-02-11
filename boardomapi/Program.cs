@@ -9,6 +9,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure CORS — allowed origins are read from the CORS_ORIGINS environment variable
+// Set CORS_ORIGINS as a comma-separated list, e.g. "https://example.com,https://api.example.com"
+var corsOrigins = builder.Configuration.GetValue<string>("CORS_ORIGINS");
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CloudflareTunnel", policy =>
+    {
+        if (!string.IsNullOrWhiteSpace(corsOrigins))
+        {
+            var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            policy.WithOrigins(origins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        }
+        else
+        {
+            // Fallback: allow any origin in Development
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+    });
+});
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -32,6 +57,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // Configure the HTTP request pipeline.
+
+app.UseCors("CloudflareTunnel");
 
 app.UseSwagger();
 app.UseSwaggerUI();
