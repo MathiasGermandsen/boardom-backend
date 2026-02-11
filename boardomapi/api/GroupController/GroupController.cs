@@ -99,7 +99,17 @@ public class GroupController : ControllerBase
       {
         g.GroupId,
         g.GroupName,
-        g.CreatedAt
+        g.CreatedAt,
+        Devices = _db.DeviceGroups
+          .Where(dg => dg.GroupId == g.GroupId)
+          .Select(dg => new
+          {
+            dg.Device!.DeviceId,
+            dg.Device.FriendlyName,
+            dg.Device.CreatedAt,
+            dg.AddedAt
+          })
+          .ToList()
       })
       .ToListAsync();
 
