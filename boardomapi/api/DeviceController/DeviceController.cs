@@ -16,7 +16,7 @@ public class DeviceController : ControllerBase
     _db = db;
   }
 
-  [HttpPost("addDevice")]
+  [HttpPost("add")]
   public async Task<IActionResult> AddDevice([FromBody] AddDeviceRequest request)
   {
     if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.FriendlyName))
@@ -50,6 +50,27 @@ public class DeviceController : ControllerBase
     await _db.SaveChangesAsync();
 
     return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
+  }
+
+  [HttpPut("edit")]
+  public async Task<IActionResult> EditDevice([FromBody] EditDeviceRequest request)
+  {
+    if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.NewFriendlyName))
+    {
+        return BadRequest(new { error = "DeviceId and FriendlyName are required" });
+    }
+    
+    Device device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
+
+    if (device == null)
+    {
+      return NotFound(new  { error = "Device not found" });
+    }
+    
+    device.FriendlyName = request.NewFriendlyName;
+    await  _db.SaveChangesAsync();
+    
+    return Ok(new {message = "Device Updated", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
   }
 
   [HttpGet("{deviceId}")]

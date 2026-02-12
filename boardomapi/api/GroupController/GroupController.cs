@@ -163,4 +163,25 @@ public class GroupController : ControllerBase
       deviceId = request.DeviceId
     });
   }
+
+  [HttpDelete("delete/{groupName}")]
+  public async Task<IActionResult> DeleteGroup([FromRoute] string groupName)
+  {
+    if (string.IsNullOrWhiteSpace(groupName))
+    {
+      return BadRequest(new { error = "Group name is required" });
+    }
+    
+    Group group = await _db.Groups.FirstOrDefaultAsync(g => g.GroupName == groupName);
+
+    if (group == null)
+    {
+      return NotFound(new { error = "Group not found" });
+    }
+
+    _db.Groups.Remove(group);
+    await  _db.SaveChangesAsync();
+    
+    return Ok(new {message = "Group deleted", groupId = group.GroupId, groupName = group.GroupName });
+  }
 }
