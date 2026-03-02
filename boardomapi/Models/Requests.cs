@@ -17,3 +17,24 @@ public record AddDeviceToGroupRequest(string GroupName, string DeviceId);
 
 public record AddDeviceRequest(string DeviceId, string FriendlyName);
 
+public record SensorDataResponse(
+    int Id,
+    string DeviceId,
+    DateTime DateAdded,
+    double Temperature,
+    double Humidity,
+    double Pressure,
+    double Light,
+    double Moisture
+);
+
+public record PaginatedResponse<T>(
+    IReadOnlyList<T> Items,
+    int Page,
+    int PageSize,
+    int TotalCount,
+    int TotalPages
+);
+
+
+
