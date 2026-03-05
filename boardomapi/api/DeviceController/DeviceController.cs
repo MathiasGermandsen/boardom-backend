@@ -104,6 +104,7 @@ public class DeviceController : ControllerBase
       device.DeviceId,
       device.FriendlyName,
       device.CreatedAt,
+      device.LastHeartbeat,
       SensorReadings = sensorData
     });
   }
@@ -138,7 +139,8 @@ public class DeviceController : ControllerBase
       {
         d.DeviceId,
         d.FriendlyName,
-        d.CreatedAt
+        d.CreatedAt,
+        d.LastHeartbeat
       })
       .ToListAsync();
 
