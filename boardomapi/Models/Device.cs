@@ -14,4 +14,6 @@ public class Device
   public bool IsDeleted { get; set; } = false;
 
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+  public DateTime LastHeartbeat { get; set; }
 }

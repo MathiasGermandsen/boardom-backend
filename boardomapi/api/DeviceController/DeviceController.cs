@@ -1,7 +1,10 @@
+using System.Text.Json.Serialization;
 using boardomapi.Database;
 using boardomapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Npgsql.Internal;
 
 namespace boardomapi.Api.DeviceController;
 
@@ -140,5 +143,32 @@ public class DeviceController : ControllerBase
       .ToListAsync();
 
     return Ok(devices);
+  }
+
+  public class DeviceHeartbeat
+  {
+    [JsonPropertyName("deviceId")]
+    public string DeviceId {get; set;} = string.Empty;
+  }
+
+  [HttpPost("heartbeat")]
+  public async Task <IActionResult> Heartbeat([FromBody] DeviceHeartbeat request)
+  {
+    if (request == null || string.IsNullOrWhiteSpace(request.DeviceId))
+    {
+      return BadRequest(new { success = false, message = "Device ID is required"});
+    }
+
+    Device device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
+
+    if (device == null)
+    {
+      return NotFound(new { error = "Device not found", request.DeviceId });
+    }
+
+    device.LastHeartbeat = DateTime.UtcNow;
+    await _db.SaveChangesAsync();
+
+    return Ok(new {success = true });
   }
 }
