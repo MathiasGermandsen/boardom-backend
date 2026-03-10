@@ -1,4 +1,5 @@
 using boardomapi.Database;
+using boardomapi.Jobs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,8 @@ var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(dataSource));
+
+builder.Services.AddHostedService<SoftDeleteCleanupJob>();
 
 var app = builder.Build();
 

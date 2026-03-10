@@ -8,7 +8,7 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Dokploy](https://img.shields.io/badge/Dokploy-Ready-6C47FF)](https://dokploy.com/)
 
 ---
 
@@ -18,9 +18,9 @@
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
 - [API Endpoints](#-api-endpoints)
+- [Background Jobs](#-background-jobs)
 - [Configuration](#-configuration)
 - [Docker](#-docker)
-- [Kubernetes Deployment](#-kubernetes-deployment)
 - [Project Structure](#-project-structure)
 
 ---
@@ -31,9 +31,10 @@
 - **Sensor Data Collection** - Store temperature, humidity, pressure, light, and moisture readings
 - **Device Grouping** - Organize devices into logical groups
 - **RESTful API** - Clean, well-documented API endpoints
+- **Soft-Delete Cleanup Job** - Automatically purges soft-deleted devices and groups on a configurable schedule (default: every 30 days)
 - **Swagger UI** - Interactive API documentation
 - **Docker Support** - Containerized deployment ready
-- **Kubernetes Ready** - Production-ready K8s manifests included
+- **Dokploy Deployment** - Deploy via Dokploy
 
 ---
 
@@ -47,7 +48,7 @@
 | Npgsql                  | PostgreSQL Driver     |
 | Swagger/OpenAPI         | API Documentation     |
 | Docker                  | Containerization      |
-| Kubernetes              | Orchestration         |
+| Dokploy                 | Deployment            |
 
 ---
 
@@ -67,16 +68,38 @@
    cd boardomapi
    ```
 
-2. **Configure the database connection**
-   
-   Update `boardomapi/appsettings.json`:
+2. **Configure `appsettings.json`**
+
+   Edit `boardomapi/appsettings.json` with the full configuration below. Replace the placeholder values with your own:
+
    ```json
    {
+     "Logging": {
+       "LogLevel": {
+         "Default": "Information",
+         "Microsoft.AspNetCore": "Warning",
+         "Microsoft.EntityFrameworkCore": "Warning"
+       }
+     },
+     "AllowedHosts": "*",
      "ConnectionStrings": {
-       "DefaultConnection": "Host=localhost;Database=boardom;Username=postgres;Password=yourpassword"
+       "DefaultConnection": "Host=<your-host>;Database=<your-db>;Username=<your-user>;Password=<your-password>;SSL Mode=Require;"
+     },
+     "CleanupJob": {
+       "IntervalDays": 30,
+       "IntervalMinutes": null
      }
    }
    ```
+
+   | Key | Required | Description |
+   | --- | :------: | --- |
+   | `ConnectionStrings:DefaultConnection` | **Yes** | PostgreSQL connection string. The app will refuse to start without it. |
+   | `CleanupJob:IntervalDays` | No | Days between soft-delete cleanup runs (default: `30`). |
+   | `CleanupJob:IntervalMinutes` | No | Set to a number to override `IntervalDays` with a minutes-based interval. Useful for local testing. Set to `null` in production. |
+   | `CORS_ORIGINS` | No | Comma-separated list of allowed CORS origins (e.g. `https://app.example.com,https://admin.example.com`). When not set, all origins are allowed. Can also be set as an environment variable. |
+
+   > **Note:** In Development mode the app automatically applies pending EF Core migrations on startup. In Production you must run migrations manually.
 
 3. **Run the application**
    ```bash
@@ -86,7 +109,7 @@
 
 4. **Open Swagger UI**
    
-   Navigate to: [http://localhost:5000/swagger](http://localhost:5000/swagger)
+   Navigate to: [http://localhost:5248/swagger](http://localhost:5248/swagger)
 
 ---
 
@@ -202,6 +225,48 @@
 
 ---
 
+## 🔄 Background Jobs
+
+### Soft-Delete Cleanup Job
+
+A background service (`SoftDeleteCleanupJob`) runs on a recurring schedule and permanently removes all `Device` and `Group` records where `IsDeleted` is `true`.
+
+| Setting | Description | Default |
+| --- | --- | --- |
+| `CleanupJob:IntervalDays` | Interval in days between cleanup runs | `30` |
+| `CleanupJob:IntervalMinutes` | Override interval in minutes (takes priority over `IntervalDays` when set) | `null` |
+
+**How it works:**
+1. The job starts when the application launches and waits for the configured interval.
+2. After each interval it queries `Devices` and `Groups` with `IsDeleted == true` (bypassing the global query filter).
+3. Matching records are permanently deleted from the database.
+4. Results are logged — check the application logs for `SoftDeleteCleanupJob` entries.
+
+**Configuration in `appsettings.json`:**
+```json
+{
+  "CleanupJob": {
+    "IntervalDays": 30,
+    "IntervalMinutes": null
+  }
+}
+```
+
+**Testing locally:**
+
+Set `IntervalMinutes` to a small value (e.g. `1`) to trigger the job quickly:
+```json
+{
+  "CleanupJob": {
+    "IntervalDays": 30,
+    "IntervalMinutes": 1
+  }
+}
+```
+Remove `IntervalMinutes` (or set it to `null`) before deploying to production.
+
+---
+
 ## ⚙️ Configuration
 
 ### Environment Variables
@@ -210,6 +275,8 @@
 | -------------------------------------- | ------------------------------------ | ------------- |
 | `ConnectionStrings__DefaultConnection` | PostgreSQL connection string         | -             |
 | `ASPNETCORE_ENVIRONMENT`               | Environment (Development/Production) | `Development` |
+| `CleanupJob__IntervalDays`             | Days between soft-delete purge runs  | `30`          |
+| `CleanupJob__IntervalMinutes`          | Minutes override (for testing)       | `null`        |
 
 ### appsettings.json
 
@@ -279,25 +346,6 @@ volumes:
 
 ---
 
-## ☸️ Kubernetes Deployment
-
-Kubernetes manifests are available in the `k8s/` folder:
-
-- `k8s/dev/` - Development environment
-- `k8s/prod/` - Production environment
-
-### Deploy to Kubernetes
-
-```bash
-# Development
-kubectl apply -f k8s/dev/deployment.yaml
-
-# Production
-kubectl apply -f k8s/prod/deployment.yaml
-```
-
----
-
 ## 📁 Project Structure
 
 ```
@@ -312,6 +360,8 @@ boardomapi/
 │   ├── database/
 │   │   ├── AppDbContext.cs        # EF Core DbContext
 │   │   └── DbConfig.cs            # Database configuration
+│   ├── Jobs/
+│   │   └── SoftDeleteCleanupJob.cs # Periodic soft-delete purge
 │   ├── Models/
 │   │   ├── Device.cs              # Device entity
 │   │   ├── DeviceGroup.cs         # Device-Group relationship
@@ -321,11 +371,6 @@ boardomapi/
 │   ├── Program.cs                 # Application entry point
 │   ├── Dockerfile                 # Container definition
 │   └── appsettings.json           # Configuration
-├── k8s/
-│   ├── dev/
-│   │   └── deployment.yaml
-│   └── prod/
-│       └── deployment.yaml
 └── readme.md
 ```
 
