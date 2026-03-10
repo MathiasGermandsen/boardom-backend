@@ -3,10 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace boardomapi.Jobs;
 
-/// <summary>
-/// Background job that permanently removes entities marked as soft-deleted
-/// (IsDeleted == true) on a configurable interval (default: every 30 days).
-/// </summary>
 public class SoftDeleteCleanupJob : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
