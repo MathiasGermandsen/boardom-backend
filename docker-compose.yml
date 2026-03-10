@@ -10,6 +10,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
       - CORS_ORIGINS=${CORS_ORIGINS}
+      - CleanupJob__IntervalDays=${CLEANUP_INTERVAL_DAYS:-30}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]

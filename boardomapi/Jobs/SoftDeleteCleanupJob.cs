@@ -19,6 +19,8 @@ public class SoftDeleteCleanupJob : BackgroundService
         _logger = logger;
     }
 
+    private static readonly TimeSpan MinInterval = TimeSpan.FromMinutes(1);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var intervalMinutes = _configuration.GetValue<int?>("CleanupJob:IntervalMinutes");
@@ -26,6 +28,14 @@ public class SoftDeleteCleanupJob : BackgroundService
         var interval = intervalMinutes.HasValue
             ? TimeSpan.FromMinutes(intervalMinutes.Value)
             : TimeSpan.FromDays(intervalDays);
+
+        if (interval < MinInterval)
+        {
+            _logger.LogWarning(
+                "SoftDeleteCleanupJob: Configured interval {Interval} is too small, defaulting to {MinInterval}",
+                interval, MinInterval);
+            interval = MinInterval;
+        }
 
         _logger.LogInformation("SoftDeleteCleanupJob started. Running every {Interval}", interval);
 
