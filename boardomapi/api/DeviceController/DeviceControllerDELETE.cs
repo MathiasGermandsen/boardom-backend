@@ -14,6 +14,6 @@ public partial class DeviceController
     device!.IsDeleted = true;
     await _db.SaveChangesAsync();
 
-    return NoContent();
+    return Ok();
   }
 }
