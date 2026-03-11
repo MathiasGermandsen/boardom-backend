@@ -1,16 +1,13 @@
-using System.Text.Json.Serialization;
 using boardomapi.Database;
 using boardomapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using Npgsql.Internal;
 
 namespace boardomapi.Api.DeviceController;
 
 [ApiController]
 [Route("[controller]")]
-public class DeviceController : ControllerBase
+public partial class DeviceController : ControllerBase
 {
   private readonly AppDbContext _db;
 
@@ -19,158 +16,15 @@ public class DeviceController : ControllerBase
     _db = db;
   }
 
-  [HttpPost("add")]
-  public async Task<IActionResult> AddDevice([FromBody] AddDeviceRequest request)
-  {
-    if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.FriendlyName))
-    {
-      return BadRequest(new { error = "DeviceId and FriendlyName are required" });
-    }
-
-    var existing = await _db.Devices
-      .IgnoreQueryFilters()
-      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
-
-    if (existing != null)
-    {
-      if (existing.IsDeleted)
-      {
-        existing.IsDeleted = false;
-      }
-
-      existing.FriendlyName = request.FriendlyName;
-      await _db.SaveChangesAsync();
-      return Ok(new { message = "Device updated", deviceId = existing.DeviceId, friendlyName = existing.FriendlyName });
-    }
-
-    var device = new Device
-    {
-      DeviceId = request.DeviceId,
-      FriendlyName = request.FriendlyName
-    };
-
-    _db.Devices.Add(device);
-    await _db.SaveChangesAsync();
-
-    return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
-  }
-
-  [HttpPut("edit")]
-  public async Task<IActionResult> EditDevice([FromBody] EditDeviceRequest request)
-  {
-    if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.NewFriendlyName))
-    {
-        return BadRequest(new { error = "DeviceId and FriendlyName are required" });
-    }
-    
-    Device device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
-
-    if (device == null)
-    {
-      return NotFound(new  { error = "Device not found" });
-    }
-    
-    device.FriendlyName = request.NewFriendlyName;
-    await  _db.SaveChangesAsync();
-    
-    return Ok(new {message = "Device Updated", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
-  }
-
-  [HttpGet("{deviceId}")]
-  public async Task<IActionResult> GetDeviceAsync([FromRoute] string deviceId)
+  private async Task<(Device? device, IActionResult? error)> FindDeviceOrErrorAsync(string deviceId)
   {
     if (string.IsNullOrWhiteSpace(deviceId))
-    {
-      return BadRequest(new { error = "DeviceId is required" });
-    }
+      return (null, BadRequest(new { error = "DeviceId is required" }));
 
-    var device = await _db.Devices
-      .AsNoTracking()
-      .FirstOrDefaultAsync(d => d.DeviceId == deviceId);
-
+    var device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == deviceId);
     if (device == null)
-    {
-      return NotFound(new { error = "Device not found", deviceId });
-    }
+      return (null, NotFound(new { error = "Device not found", deviceId }));
 
-    var sensorData = await _db.SensorReadings
-      .AsNoTracking()
-      .Where(s => s.DeviceId == deviceId)
-      .OrderByDescending(s => s.DateAdded)
-      .ToListAsync();
-
-    return Ok(new
-    {
-      device.DeviceId,
-      device.FriendlyName,
-      device.CreatedAt,
-      device.LastHeartbeat,
-      SensorReadings = sensorData
-    });
-  }
-
-
-  [HttpPost("delete/{deviceId}")]
-  public async Task<IActionResult> DeleteDeviceAsync([FromRoute] string deviceId)
-  {
-    if (string.IsNullOrWhiteSpace(deviceId))
-    {
-      return BadRequest(new { error = "DeviceId is required" });
-    }
-
-    var device = await _db.Devices.FindAsync(deviceId);
-    if (device == null)
-    {
-      return NotFound(new { error = "Device not found", deviceId });
-    }
-
-    device.IsDeleted = true;
-    await _db.SaveChangesAsync();
-
-    return NoContent();
-  }
-
-  [HttpGet("getAll")]
-  public async Task<ActionResult> GetAllDevicesAsync()
-  {
-    var devices = await _db.Devices
-      .AsNoTracking()
-      .Select(d => new
-      {
-        d.DeviceId,
-        d.FriendlyName,
-        d.CreatedAt,
-        d.LastHeartbeat
-      })
-      .ToListAsync();
-
-    return Ok(devices);
-  }
-
-  public class DeviceHeartbeat
-  {
-    [JsonPropertyName("deviceId")]
-    public string DeviceId {get; set;} = string.Empty;
-  }
-
-  [HttpPost("heartbeat")]
-  public async Task <IActionResult> Heartbeat([FromBody] DeviceHeartbeat request)
-  {
-    if (request == null || string.IsNullOrWhiteSpace(request.DeviceId))
-    {
-      return BadRequest(new { success = false, message = "Device ID is required"});
-    }
-
-    Device device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
-
-    if (device == null)
-    {
-      return NotFound(new { error = "Device not found", request.DeviceId });
-    }
-
-    device.LastHeartbeat = DateTime.UtcNow;
-    await _db.SaveChangesAsync();
-
-    return Ok(new {success = true });
+    return (device, null);
   }
 }
