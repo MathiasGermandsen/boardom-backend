@@ -9,7 +9,7 @@ public partial class DeviceController
   public async Task<IActionResult> EditDeviceAsync([FromBody] EditDeviceRequest request)
   {
     if (string.IsNullOrWhiteSpace(request.NewFriendlyName))
-      return BadRequest(new { error = "NewFriendlyName is required" });
+      return BadRequest(new { error = "newFriendlyName is required" });
 
     var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
     if (error != null)

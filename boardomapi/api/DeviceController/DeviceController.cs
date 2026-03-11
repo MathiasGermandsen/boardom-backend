@@ -21,9 +21,16 @@ public partial class DeviceController : ControllerBase
     if (string.IsNullOrWhiteSpace(deviceId))
       return (null, BadRequest(new { error = "DeviceId is required" }));
 
-    var device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == deviceId);
+    Device? device = await _db.Devices.FirstOrDefaultAsync(d => d.DeviceId == deviceId);
+
     if (device == null)
       return (null, NotFound(new { error = "Device not found", deviceId }));
+
+      
+    if (device.IsDeleted)
+    {
+      return (null, StatusCode(410, new { error = "Device is deleted", deviceId}));
+    }
 
     return (device, null);
   }
