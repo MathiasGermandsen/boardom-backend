@@ -62,6 +62,8 @@ public class AppDbContext : DbContext
       entity.Property(e => e.DeviceId).HasColumnName("device_id");
       entity.Property(e => e.AddedAt).HasColumnName("added_at").HasDefaultValueSql("NOW()");
 
+      entity.HasQueryFilter(e => e.Group != null && !e.Group.IsDeleted);
+
       entity.HasOne(e => e.Group)
           .WithMany()
           .HasForeignKey(e => e.GroupId);

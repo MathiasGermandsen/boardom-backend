@@ -15,24 +15,24 @@ builder.Services.AddSwaggerGen();
 var corsOrigins = builder.Configuration.GetValue<string>("CORS_ORIGINS");
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CloudflareTunnel", policy =>
+  options.AddPolicy("CloudflareTunnel", policy =>
+  {
+    if (!string.IsNullOrWhiteSpace(corsOrigins))
     {
-        if (!string.IsNullOrWhiteSpace(corsOrigins))
-        {
-            var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            policy.WithOrigins(origins)
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        }
-        else
-        {
-            // Fallback: allow any origin in Development
-            policy.AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        }
-    });
+      var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+      policy.WithOrigins(origins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    }
+    else
+    {
+      // Fallback: allow any origin in Development
+      policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    }
+  });
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,6 +40,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 {
   throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
 }
+
+var applyMigrationsOnStartup = builder.Configuration.GetValue("Database:ApplyMigrationsOnStartup", true);
+
 var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -49,8 +52,7 @@ builder.Services.AddHostedService<SoftDeleteCleanupJob>();
 
 var app = builder.Build();
 
-// Apply pending EF Core migrations automatically on startup only in Development
-if (app.Environment.IsDevelopment())
+if (applyMigrationsOnStartup)
 {
   using (var scope = app.Services.CreateScope())
   {
