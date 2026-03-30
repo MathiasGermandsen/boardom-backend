@@ -1,4 +1,22 @@
 services:
+  postgres:
+    image: postgres:18-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-boardom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-boardom}
+      POSTGRES_DB: ${POSTGRES_DB:-boardomdb}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-boardom} -d ${POSTGRES_DB:-boardomdb}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   boardomapi:
     build:
       context: .
@@ -8,13 +26,19 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-boardomdb};Username=${POSTGRES_USER:-boardom};Password=${POSTGRES_PASSWORD:-boardom}
       - CORS_ORIGINS=${CORS_ORIGINS}
       - CleanupJob__IntervalDays=${CLEANUP_INTERVAL_DAYS:-30}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
+
+volumes:
+  pgdata:
