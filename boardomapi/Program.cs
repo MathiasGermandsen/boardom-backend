@@ -49,14 +49,11 @@ builder.Services.AddHostedService<SoftDeleteCleanupJob>();
 
 var app = builder.Build();
 
-// Apply pending EF Core migrations automatically on startup only in Development
-if (app.Environment.IsDevelopment())
+// Apply pending EF Core migrations automatically on startup
+using (var scope = app.Services.CreateScope())
 {
-  using (var scope = app.Services.CreateScope())
-  {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-  }
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+  db.Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.
