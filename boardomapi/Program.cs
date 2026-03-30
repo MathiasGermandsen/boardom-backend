@@ -41,7 +41,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
   throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
 }
 
-var applyMigrationsOnStartup = builder.Configuration.GetValue("Database:ApplyMigrationsOnStartup", true);
 
 var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
@@ -52,14 +51,6 @@ builder.Services.AddHostedService<SoftDeleteCleanupJob>();
 
 var app = builder.Build();
 
-if (applyMigrationsOnStartup)
-{
-  using (var scope = app.Services.CreateScope())
-  {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-  }
-}
 
 // Configure the HTTP request pipeline.
 
