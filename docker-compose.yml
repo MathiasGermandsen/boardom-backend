@@ -8,13 +8,42 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=postgres;Port=5432;Database=boardomdb;Username=boardomuser;Password=TPioyXbqZOtDENdN3rvX}
       - CORS_ORIGINS=${CORS_ORIGINS}
       - CleanupJob__IntervalDays=${CLEANUP_INTERVAL_DAYS:-30}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
+    networks:
+      - boardomapi-network
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: boardomdb
+      POSTGRES_USER: boardomuser
+      POSTGRES_PASSWORD: TPioyXbqZOtDENdN3rvX
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U boardomuser" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - boardomapi-network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  boardomapi-network:
+    driver: bridge
