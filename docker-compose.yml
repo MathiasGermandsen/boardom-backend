@@ -33,7 +33,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U boardomuser" ]
+      test: [ "CMD-SHELL", "pg_isready -U boardomuser -d boardomdb" ]
       interval: 10s
       timeout: 5s
       retries: 5
