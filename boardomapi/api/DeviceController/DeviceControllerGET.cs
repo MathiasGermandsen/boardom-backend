@@ -12,17 +12,18 @@ public partial class DeviceController
     if (string.IsNullOrWhiteSpace(deviceId))
       return BadRequest(new { error = "DeviceId is required" });
 
-    var device = await _db.Devices
+    Device device = await _db.Devices
       .AsNoTracking()
       .FirstOrDefaultAsync(d => d.DeviceId == deviceId);
 
     if (device == null)
       return NotFound(new { error = "Device not found", deviceId });
 
-    var sensorData = await _db.SensorReadings
+    List<SensorData> sensorData = await _db.SensorReadings
       .AsNoTracking()
       .Where(s => s.DeviceId == deviceId)
       .OrderByDescending(s => s.DateAdded)
+      .Take(10)
       .ToListAsync();
 
     return Ok(new
@@ -38,6 +39,7 @@ public partial class DeviceController
   [HttpGet("getAll")]
   public async Task<ActionResult> GetAllDevicesAsync()
   {
+
     var devices = await _db.Devices
       .AsNoTracking()
       .Select(d => new
@@ -45,7 +47,21 @@ public partial class DeviceController
         d.DeviceId,
         d.FriendlyName,
         d.CreatedAt,
-        d.LastHeartbeat
+        d.LastHeartbeat,
+        LatestSensorReading = _db.SensorReadings
+          .AsNoTracking()
+          .Where(s => s.DeviceId == d.DeviceId)
+          .OrderByDescending(s => s.DateAdded)
+          .Select(s => new
+          {
+            s.DateAdded,
+            s.Temperature,
+            s.Humidity,
+            s.Pressure,
+            s.Light,
+            s.Moisture
+          })
+          .FirstOrDefault()
       })
       .ToListAsync();
 
