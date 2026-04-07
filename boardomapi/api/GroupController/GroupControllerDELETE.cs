@@ -25,7 +25,8 @@ public partial class GroupController
     if (error != null)
       return error;
 
-      Device? dev = await _db.Devices.FindAsync(request.DeviceId);
+      Device? dev = await _db.Devices
+      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId && d.UserId == GetUserId());
 
     if (dev == null)
     {

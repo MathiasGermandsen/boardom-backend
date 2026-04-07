@@ -13,14 +13,15 @@ public partial class GroupController
       return BadRequest(new { error = "GroupName is required" });
 
     var existing = await _db.Groups
-      .FirstOrDefaultAsync(g => g.GroupName == request.GroupName && !g.IsDeleted);
+      .FirstOrDefaultAsync(g => g.GroupName == request.GroupName && !g.IsDeleted && g.UserId == GetUserId());
 
     if (existing != null)
       return Conflict(new { error = "Group with this name already exists" });
 
     var group = new Group
     {
-      GroupName = request.GroupName
+      GroupName = request.GroupName,
+      UserId = GetUserId()
     };
 
     _db.Groups.Add(group);
@@ -44,7 +45,9 @@ public partial class GroupController
     if (error != null)
       return error;
 
-    var device = await _db.Devices.FindAsync(request.DeviceId);
+    var device = await _db.Devices
+    .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId && d.UserId == GetUserId());
+
     if (device == null)
       return NotFound(new { error = "Device not found", deviceId = request.DeviceId });
 

@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
       entity.Property(e => e.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
       entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
       entity.Property(e => e.LastHeartbeat).HasColumnName("last_heartbeat");
+      entity.Property(e => e.UserId).HasColumnName("user_id");
       entity.HasQueryFilter(e => !e.IsDeleted);
     });
 
