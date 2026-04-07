@@ -8,7 +8,7 @@ namespace boardomapi.Api.DataController;
 public partial class DataController
 {
   [HttpGet("sensorData/{deviceId}")]
-  public async Task<ActionResult<PaginatedResponse<SensorDataResponse>>> GetSensorDataAsync(
+  public async Task<ActionResult<List<SensorDataResponse>>> GetSensorDataAsync(
       [FromRoute] string deviceId,
       [FromQuery] int page = 1,
       [FromQuery] DateTime? startDate = null,
@@ -55,9 +55,6 @@ public partial class DataController
             s.Moisture))
         .ToListAsync();
 
-    var response = new PaginatedResponse<SensorDataResponse>(
-        items, page, pageSize, totalCount, totalPages);
-
-    return Ok(response);
+    return Ok(items);
   }
 }
