@@ -1,3 +1,4 @@
+using System.Net.Security;
 using boardomapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,4 @@ public partial class GroupController
 
     return Ok();
   }
-
-  
 }
