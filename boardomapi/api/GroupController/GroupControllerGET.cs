@@ -10,6 +10,7 @@ public partial class GroupController
   {
     var groups = await _db.Groups
       .AsNoTracking()
+      .Where(g => g.UserId == GetUserId())
       .Select(g => new
       {
         g.GroupId,

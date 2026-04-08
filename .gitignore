@@ -6,3 +6,5 @@
 *global.json
 *boardomapi.tar
 *migrations
+.vs
+boardomapi/boardomapi.csproj.user

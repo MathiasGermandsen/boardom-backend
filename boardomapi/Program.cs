@@ -1,6 +1,11 @@
 using boardomapi.Database;
 using boardomapi.Jobs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +13,40 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+  options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+  {
+    Name = "Authorization",
+  Type = SecuritySchemeType.Http,
+  Scheme = "Bearer",
+  BearerFormat = "JWT",
+  Description = "Enter your JWT token"
+  });
+
+  options.AddSecurityRequirement(new OpenApiSecurityRequirement
+  {
+    {
+      new OpenApiSecurityScheme
+      {
+        Reference = new OpenApiReference
+        {
+          Type = ReferenceType.SecurityScheme,
+          Id = "Bearer"
+        }
+      },
+      new string[] {}
+    }
+  });
+});
+
+//Adding Auth0 JWT validation
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+  options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/"; //This does not need to be a secret, since its a public domain.
+  options.Audience = builder.Configuration["Auth0:Audience"];
+});
 
 // Configure CORS — allowed origins are read from the CORS_ORIGINS environment variable
 // Set CORS_ORIGINS as a comma-separated list, e.g. "https://example.com,https://api.example.com"
@@ -55,6 +93,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseCors("CloudflareTunnel");
+
+//Auth0 jwt
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseSwagger();
 app.UseSwaggerUI();

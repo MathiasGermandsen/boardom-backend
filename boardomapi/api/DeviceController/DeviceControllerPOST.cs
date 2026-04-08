@@ -14,7 +14,7 @@ public partial class DeviceController
 
     var existing = await _db.Devices
       .IgnoreQueryFilters()
-      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId);
+      .FirstOrDefaultAsync(d => d.DeviceId == request.DeviceId && d.UserId == GetUserId());
 
     if (existing != null)
     {
@@ -29,7 +29,8 @@ public partial class DeviceController
     var device = new Device
     {
       DeviceId = request.DeviceId,
-      FriendlyName = request.FriendlyName
+      FriendlyName = request.FriendlyName,
+      UserId = GetUserId()
     };
 
     _db.Devices.Add(device);

@@ -15,7 +15,7 @@ public partial class DataController
       return BadRequest(new { error = "DeviceId is required" });
     }
 
-    var deviceExists = await _db.Devices.AnyAsync(d => d.DeviceId == request.DeviceId);
+    var deviceExists = await _db.Devices.AnyAsync(d => d.DeviceId == request.DeviceId && d.UserId == GetUserId());
     if (!deviceExists)
     {
       return NotFound(new { error = "Device not found", deviceId = request.DeviceId });

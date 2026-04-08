@@ -14,7 +14,7 @@ public partial class DeviceController
 
     Device device = await _db.Devices
       .AsNoTracking()
-      .FirstOrDefaultAsync(d => d.DeviceId == deviceId);
+      .FirstOrDefaultAsync(d => d.DeviceId == deviceId && d.UserId == GetUserId());
 
     if (device == null)
       return NotFound(new { error = "Device not found", deviceId });
@@ -42,6 +42,7 @@ public partial class DeviceController
 
     var devices = await _db.Devices
       .AsNoTracking()
+      .Where(d => d.UserId == GetUserId())
       .Select(d => new
       {
         d.DeviceId,

@@ -20,7 +20,7 @@ public partial class DataController
     if (page < 1)
       return BadRequest(new { error = "Page must be greater than or equal to 1" });
 
-    var deviceExists = await _db.Devices.AnyAsync(d => d.DeviceId == deviceId);
+    var deviceExists = await _db.Devices.AnyAsync(d => d.DeviceId == deviceId && d.UserId == GetUserId());
     if (!deviceExists)
       return NotFound(new { error = "Device not found", deviceId });
 
