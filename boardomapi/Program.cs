@@ -46,6 +46,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 {
   options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/"; //This does not need to be a secret, since its a public domain.
   options.Audience = builder.Configuration["Auth0:Audience"];
+  var apiAudience = builder.Configuration["Auth0:Audience"];
+  options.Audience = apiAudience;
+  // Auth0 access tokens can contain multiple audiences (e.g. API audience + /userinfo).
+  // Accept any of the configured valid audiences.
+  options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+  {
+    ValidAudiences = new[]
+    {
+      apiAudience,
+      $"{options.Authority.TrimEnd('/')}/userinfo"
+    }.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray()
+  };
 });
 
 // Configure CORS — allowed origins are read from the CORS_ORIGINS environment variable
