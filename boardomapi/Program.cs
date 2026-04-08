@@ -44,7 +44,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-  options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/";
+  options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/"; //This does not need to be a secret, since its a public domain.
   options.Audience = builder.Configuration["Auth0:Audience"];
 });
 
