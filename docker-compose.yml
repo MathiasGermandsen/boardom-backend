@@ -10,6 +10,8 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=postgres;Port=5432;Database=boardomdb;Username=boardomuser;Password=TPioyXbqZOtDENdN3rvX}
       - CORS_ORIGINS=${CORS_ORIGINS}
+      - Auth0__Domain=${AUTH0_DOMAIN}
+      - Auth0__Audience=${AUTH0_AUDIENCE}
       - CleanupJob__IntervalDays=${CLEANUP_INTERVAL_DAYS:-30}
     restart: unless-stopped
     healthcheck:

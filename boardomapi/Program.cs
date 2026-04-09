@@ -18,10 +18,10 @@ builder.Services.AddSwaggerGen(options =>
   options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
   {
     Name = "Authorization",
-  Type = SecuritySchemeType.Http,
-  Scheme = "Bearer",
-  BearerFormat = "JWT",
-  Description = "Enter your JWT token"
+    Type = SecuritySchemeType.Http,
+    Scheme = "Bearer",
+    BearerFormat = "JWT",
+    Description = "Enter your JWT token"
   });
 
   options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -44,8 +44,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-  options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/"; //This does not need to be a secret, since its a public domain.
-  options.Audience = builder.Configuration["Auth0:Audience"];
+  var auth0Domain = builder.Configuration["Auth0:Domain"];
+  options.Authority = $"https://{auth0Domain}/";
   var apiAudience = builder.Configuration["Auth0:Audience"];
   options.Audience = apiAudience;
   // Auth0 access tokens can contain multiple audiences (e.g. API audience + /userinfo).
