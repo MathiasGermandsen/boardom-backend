@@ -12,6 +12,7 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS}
       - Auth0__Domain=${AUTH0_DOMAIN}
       - Auth0__Audience=${AUTH0_AUDIENCE}
+      - Auth0__ClientSecret=${AUTH0_CLIENT_SECRET}
       - CleanupJob__IntervalDays=${CLEANUP_INTERVAL_DAYS:-30}
     restart: unless-stopped
     healthcheck:
