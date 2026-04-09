@@ -50,6 +50,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   string? apiAudience = builder.Configuration["Auth0:Audience"];
   string? clientSecret = builder.Configuration["Auth0:ClientSecret"];
 
+  if (string.IsNullOrWhiteSpace(clientSecret))
+  {
+    throw new InvalidOperationException("Auth0 configuration error: 'Auth0:ClientSecret' is missing or empty");
+  }
+
   options.Audience = apiAudience;
   // Auth0 access tokens can contain multiple audiences (e.g. API audience + /userinfo).
   // Accept any of the configured valid audiences.
@@ -62,7 +67,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     }.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray(),
 
     //Add the client secret as a symmetric key for JWE decryption
-    IssuerSigningKey = new SymmetricSecurityKey(
+    TokenDecryptionKey = new SymmetricSecurityKey(
       System.Text.Encoding.UTF8.GetBytes(clientSecret))
   };
 });
