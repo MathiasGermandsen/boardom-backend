@@ -46,9 +46,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-  var auth0Domain = builder.Configuration["Auth0:Domain"];
-  options.Authority = $"https://{auth0Domain}/";
-  var apiAudience = builder.Configuration["Auth0:Audience"];
+  options.Authority = "https://dev-vht5t15d8lck3cag.us.auth0.com/"; //This does not need to be a secret, since its a public domain.
+  string? apiAudience = builder.Configuration["Auth0:Audience"];
+  string? clientSecret = builder.Configuration["Auth0:ClientSecret"];
+
   options.Audience = apiAudience;
   // Auth0 access tokens can contain multiple audiences (e.g. API audience + /userinfo).
   // Accept any of the configured valid audiences.
@@ -58,9 +59,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
       apiAudience,
       $"{options.Authority.TrimEnd('/')}/userinfo"
-    }.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray()
+    }.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray(),
+
+    //Add the client secret as a symmetric key for JWE decryption
+    IssuerSigningKey = new SymmetricSecurityKey(
+      System.Text.Encoding.UTF8.GetBytes(clientSecret))
   };
 });
+
 
 // Configure CORS — allowed origins are read from the CORS_ORIGINS environment variable
 // Set CORS_ORIGINS as a comma-separated list, e.g. "https://example.com,https://api.example.com"
