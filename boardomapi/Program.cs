@@ -74,7 +74,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   };
 });
 
-
 // Configure CORS — allowed origins are read from the CORS_ORIGINS environment variable
 // Set CORS_ORIGINS as a comma-separated list, e.g. "https://example.com,https://api.example.com"
 var corsOrigins = builder.Configuration.GetValue<string>("CORS_ORIGINS");
@@ -106,7 +105,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
   throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
 }
 
-
 var dataSource = DbConfig.CreateDataSource(connectionString!);
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -115,7 +113,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHostedService<SoftDeleteCleanupJob>();
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 

@@ -43,7 +43,6 @@ public partial class DeviceController
 
   [AllowAnonymous]
   [HttpPost("heartbeat")]
-
   public async Task<IActionResult> HeartbeatAsync(
     [FromBody] DeviceHeartbeatRequest request,
     [FromServices] Auth0TokenService tokenService)
@@ -63,15 +62,4 @@ public partial class DeviceController
       accesstoken = token
     });
   }
-  // public async Task<IActionResult> HeartbeatAsync([FromBody] DeviceHeartbeatRequest request)
-  // {
-  //   var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
-  //   if (error != null)
-  //     return error;
-
-  //   device!.LastHeartbeat = DateTime.UtcNow;
-  //   await _db.SaveChangesAsync();
-
-  //   return Ok(new { success = true });
-  // }
 }
