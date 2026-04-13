@@ -18,7 +18,9 @@ public record DeleteDeviceFromGroupRequest(string GroupName, string DeviceId);
 
 public record AddDeviceRequest(string DeviceId, string FriendlyName);
 
-public record DeviceHeartbeatRequest(string DeviceId);
+public record DeviceHeartbeatRequest(
+    string DeviceId,
+    string? RefreshToken);
 
 public record SensorDataResponse(
     int Id,

@@ -49,17 +49,39 @@ public partial class DeviceController
   {
     var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
     if (error != null)
-        return error;
+      return error;
 
     device!.LastHeartbeat = DateTime.UtcNow;
-    await _db.SaveChangesAsync();
 
-    var token = await tokenService.GetTokenForArduinoAsync(device.UserId);
+    string? accessToken = null;
+    string? newRefreshToken = null;
+
+    // If device sent a refresh token, use it; otherwise fall back to client_credentials
+    if (!string.IsNullOrWhiteSpace(request.RefreshToken))
+    {
+      var tokenResult = await tokenService.RefreshAccessTokenAsync(request.RefreshToken);
+      if (tokenResult.HasValue)
+      {
+        accessToken = tokenResult.Value.AccessToken;
+        newRefreshToken = tokenResult.Value.NewRefreshToken ?? request.RefreshToken;
+
+        // Update stored refresh token if it was rotated
+        if (!string.IsNullOrWhiteSpace(newRefreshToken))
+          device.RefreshToken = newRefreshToken;
+      }
+    }
+
+    // Fallback to client_credentials if refresh token didn't work
+    if (string.IsNullOrWhiteSpace(accessToken))
+      accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
+
+    await _db.SaveChangesAsync();
 
     return Ok(new
     {
       success = true,
-      accesstoken = token
+      accesstoken = accessToken,
+      refreshtoken = newRefreshToken ?? request.RefreshToken  // Send back for device to store
     });
   }
 }

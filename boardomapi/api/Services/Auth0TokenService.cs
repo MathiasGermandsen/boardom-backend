@@ -45,6 +45,39 @@ public class Auth0TokenService
             return null;
         }
     }
+
+    public async Task<(string? AccessToken, string? NewRefreshToken)?> RefreshAccessTokenAsync(string refreshToken)
+    {
+        var domain = _configuration?["Auth0:Domain"];
+        var clientId = _configuration?["Auth0:ClientId"];
+        var clientSecret = _configuration?["Auth0:ClientSecret"];
+
+        var tokenEndpoint = $"https://{domain}/oauth/token";
+
+        var request = new
+        {
+            client_id = clientId,
+            client_secret = clientSecret,
+            grant_type = "refresh_token",
+            refresh_token = refreshToken
+        };
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(tokenEndpoint, request);
+                response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<Auth0TokenResponse>(json);
+
+            return (result?.AccessToken, result?.RefreshToken);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Auth0 refresh token error: {ex.Message}");
+            return null;
+        }
+    }
 }
 
 public record Auth0TokenResponse(
@@ -53,5 +86,7 @@ public record Auth0TokenResponse(
         [property: System.Text.Json.Serialization.JsonPropertyName("token_type")]
         string TokenType,
         [property: System.Text.Json.Serialization.JsonPropertyName("expires_in")]
-        int ExpiresIn
+        int ExpiresIn,
+        [property: System.Text.Json.Serialization.JsonPropertyName("refresh_token")]
+        string? RefreshToken = null
 );
