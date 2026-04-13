@@ -20,8 +20,8 @@ public class DeviceGroup
   [ForeignKey(nameof(Device))]
   public string? DeviceId { get; set; }
 
-  [Column("added_at")]
-  public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+  [Column("date_added")]
+  public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
   // Navigation properties
   public Group? Group { get; set; }
