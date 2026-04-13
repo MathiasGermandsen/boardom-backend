@@ -3,19 +3,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace boardomapi.Models;
 
+[Table("device_groups")]
 public class DeviceGroup
 {
   [Key]
   [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+  [Column("id")]
   public int Id { get; set; }
 
   [Required]
+  [Column("group_id")]
+  [ForeignKey(nameof(Group))]
   public int GroupId { get; set; }
 
-  [Required]
-  public string DeviceId { get; set; } = string.Empty;
+  [Column("device_id")]
+  [ForeignKey(nameof(Device))]
+  public string? DeviceId { get; set; }
 
-  public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+  [Column("date_added")]
+  public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
   // Navigation properties
   public Group? Group { get; set; }

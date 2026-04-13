@@ -30,7 +30,7 @@ public partial class DeviceController
     {
       device.DeviceId,
       device.FriendlyName,
-      device.CreatedAt,
+      device.DateAdded,
       device.LastHeartbeat,
       SensorReadings = sensorData
     });
@@ -47,7 +47,7 @@ public partial class DeviceController
       {
         d.DeviceId,
         d.FriendlyName,
-        d.CreatedAt,
+        d.DateAdded,
         d.LastHeartbeat,
         LatestSensorReading = _db.SensorReadings
           .AsNoTracking()
