@@ -1,4 +1,6 @@
 using boardomapi.Models;
+using boardomapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,16 +41,37 @@ public partial class DeviceController
     return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
   }
 
+  [AllowAnonymous]
   [HttpPost("heartbeat")]
-  public async Task<IActionResult> HeartbeatAsync([FromBody] DeviceHeartbeatRequest request)
+
+  public async Task<IActionResult> HeartbeatAsync(
+    [FromBody] DeviceHeartbeatRequest request,
+    [FromServices] Auth0TokenService tokenService)
   {
     var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
     if (error != null)
-      return error;
+        return error;
 
     device!.LastHeartbeat = DateTime.UtcNow;
     await _db.SaveChangesAsync();
 
-    return Ok(new { success = true });
+    var token = await tokenService.GetTokenForArduinoAsync(device.UserId);
+
+    return Ok(new
+    {
+      success = true,
+      accesstoken = token
+    });
   }
+  // public async Task<IActionResult> HeartbeatAsync([FromBody] DeviceHeartbeatRequest request)
+  // {
+  //   var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
+  //   if (error != null)
+  //     return error;
+
+  //   device!.LastHeartbeat = DateTime.UtcNow;
+  //   await _db.SaveChangesAsync();
+
+  //   return Ok(new { success = true });
+  // }
 }
