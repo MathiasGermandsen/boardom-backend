@@ -15,15 +15,15 @@ public partial class GroupController
       {
         g.GroupId,
         g.GroupName,
-        g.CreatedAt,
+        g.DateAdded,
         Devices = _db.DeviceGroups
           .Where(dg => dg.GroupId == g.GroupId)
           .Select(dg => new
           {
             dg.Device!.DeviceId,
             dg.Device.FriendlyName,
-            dg.Device.CreatedAt,
-            dg.AddedAt
+            DeviceDateAdded = dg.Device.DateAdded,
+            AddedToGroupAt = dg.DateAdded
           })
           .ToList()
       })

@@ -19,8 +19,8 @@ public class Group
   [Column("is_deleted")]
   public bool IsDeleted { get; set; } = false;
 
-  [Column("created_at")]
-  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+  [Column("date_added")]
+  public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
   [Column("user_id")]
   public string UserId { get; set; } = string.Empty;
