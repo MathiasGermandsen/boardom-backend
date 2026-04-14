@@ -1,5 +1,6 @@
 using boardomapi.Models;
 using boardomapi.Services;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,18 +31,24 @@ public partial class DeviceController
       return Ok(new { message = "Device updated", deviceId = existing.DeviceId, friendlyName = existing.FriendlyName });
     }
 
+    var accessToken = await tokenService.GetTokenForArduinoAsync(GetUserId());
+    if (string.IsNullOrWhiteSpace(accessToken))
+      return BadRequest(new { error = "Failed to obtain access token" });
+
     var device = new Device
     {
       DeviceId = request.DeviceId,
       FriendlyName = request.FriendlyName,
       UserId = GetUserId()
     };
-    
+
     _db.Devices.Add(device);
     await _db.SaveChangesAsync();
 
     return Created($"/device/{device.DeviceId}", new
     {
+      userId = device.UserId,
+      accessToken = accessToken,
       message = "Device registered",
       deviceId = device.DeviceId,
       friendlyName = device.FriendlyName,
@@ -59,18 +66,19 @@ public partial class DeviceController
       return error;
 
     device!.LastHeartbeat = DateTime.UtcNow;
-    
-  // Always get a fresh token via client_credentials
-  var accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
-  if (string.IsNullOrWhiteSpace(accessToken))
-    return BadRequest(new { error = "Failed to obtain access token" });
 
-  await _db.SaveChangesAsync();
+    // Always get a fresh token via client_credentials
+    var accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
+    if (string.IsNullOrWhiteSpace(accessToken))
+      return BadRequest(new { error = "Failed to obtain access token" });
 
-  return Ok(new
-  {
-    success = true,
-    accesstoken = accessToken
-  });
+    await _db.SaveChangesAsync();
+
+    return Ok(new
+    {
+      userId = device.UserId,
+      success = true,
+      accesstoken = accessToken
+    });
   }
 }
