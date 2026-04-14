@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace boardomapi.Services;
@@ -42,6 +43,8 @@ public class Auth0TokenService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Auth0 token error: {ex.Message}");
+            Console.WriteLine($"Auth0 Debug - Domain: {domain}, ClientId: {clientId}, Endpoint: {tokenEndpoint}");
+            Debug.WriteLine($"Auth0 Debug - Domain: {domain}, ClientId: {clientId}, Endpoint: {tokenEndpoint}");
             return null;
         }
     }
