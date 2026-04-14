@@ -12,7 +12,7 @@ public partial class DeviceController
     if (string.IsNullOrWhiteSpace(deviceId))
       return BadRequest(new { error = "DeviceId is required" });
 
-    Device device = await _db.Devices
+    Device? device = await _db.Devices
       .AsNoTracking()
       .FirstOrDefaultAsync(d => d.DeviceId == deviceId && d.UserId == GetUserId());
 

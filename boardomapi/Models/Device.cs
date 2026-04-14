@@ -26,4 +26,7 @@ public class Device
 
   [Column("user_id")]
   public string UserId { get; set; } = string.Empty;
+  
+  [Column("refresh_token")]
+  public string? RefreshToken { get; set; }
 }

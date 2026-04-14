@@ -1,4 +1,6 @@
 using boardomapi.Models;
+using boardomapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +9,9 @@ namespace boardomapi.Api.DeviceController;
 public partial class DeviceController
 {
   [HttpPost("add")]
-  public async Task<IActionResult> AddDeviceAsync([FromBody] AddDeviceRequest request)
+  public async Task<IActionResult> AddDeviceAsync(
+    [FromBody] AddDeviceRequest request,
+    [FromServices] Auth0TokenService tokenService)
   {
     if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.FriendlyName))
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
@@ -32,23 +36,41 @@ public partial class DeviceController
       FriendlyName = request.FriendlyName,
       UserId = GetUserId()
     };
-
+    
     _db.Devices.Add(device);
     await _db.SaveChangesAsync();
 
-    return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
+    return Created($"/device/{device.DeviceId}", new
+    {
+      message = "Device registered",
+      deviceId = device.DeviceId,
+      friendlyName = device.FriendlyName,
+    });
   }
 
+  [AllowAnonymous]
   [HttpPost("heartbeat")]
-  public async Task<IActionResult> HeartbeatAsync([FromBody] DeviceHeartbeatRequest request)
+  public async Task<IActionResult> HeartbeatAsync(
+    [FromBody] DeviceHeartbeatRequest request,
+    [FromServices] Auth0TokenService tokenService)
   {
     var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
     if (error != null)
       return error;
 
     device!.LastHeartbeat = DateTime.UtcNow;
-    await _db.SaveChangesAsync();
+    
+  // Always get a fresh token via client_credentials
+  var accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
+  if (string.IsNullOrWhiteSpace(accessToken))
+    return BadRequest(new { error = "Failed to obtain access token" });
 
-    return Ok(new { success = true });
+  await _db.SaveChangesAsync();
+
+  return Ok(new
+  {
+    success = true,
+    accesstoken = accessToken
+  });
   }
 }
