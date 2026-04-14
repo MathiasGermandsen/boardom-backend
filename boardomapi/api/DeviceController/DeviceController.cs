@@ -40,4 +40,17 @@ public partial class DeviceController : ControllerBase
 
     return (device, null);
   }
+
+  private async Task<(Device? device, IActionResult? error)> FindDeviceByIdOnlyOrErrorAsync(string deviceId)
+  {
+    if (string.IsNullOrWhiteSpace(deviceId))
+      return (null, BadRequest(new { error = "DeviceId is required" }));
+
+    Device? device = await _db.Devices.IgnoreQueryFilters().FirstOrDefaultAsync(d => d.DeviceId == deviceId);
+
+    if (device == null)
+      return (null, NotFound(new { error = "Device not found", deviceId }));
+
+    return (device, null);
+  }
 }
