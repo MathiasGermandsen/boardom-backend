@@ -27,7 +27,8 @@ public class Auth0TokenService
             client_id = clientId,
             client_secret = clientSecret,
             audience = audience,
-            grant_type = "client_credentials"
+            grant_type = "client_credentials",
+            scope = $"device:{userId}"
         };
 
         try
