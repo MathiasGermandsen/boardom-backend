@@ -61,7 +61,7 @@ public partial class DeviceController
     [FromBody] DeviceHeartbeatRequest request,
     [FromServices] Auth0TokenService tokenService)
   {
-    var (device, error) = await FindDeviceByIdOnlyOrErrorAsync(request.DeviceId);
+    var (device, error) = await FindDeviceOrErrorAsync(request.DeviceId);
     if (error != null)
       return error;
 
