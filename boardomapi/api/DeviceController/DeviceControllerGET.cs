@@ -45,6 +45,7 @@ public partial class DeviceController
       .Where(d => d.UserId == GetUserId())
       .Select(d => new
       {
+        d.UserId,
         d.DeviceId,
         d.FriendlyName,
         d.DateAdded,

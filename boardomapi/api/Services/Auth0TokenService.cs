@@ -27,8 +27,7 @@ public class Auth0TokenService
             client_id = clientId,
             client_secret = clientSecret,
             audience = audience,
-            grant_type = "client_credentials",
-            scope = $"device:{userId}"
+            grant_type = "client_credentials"
         };
 
         try
@@ -37,8 +36,8 @@ public class Auth0TokenService
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Auth0TokenResponse>(json);
-            return result?.AccessToken;
+        var result = JsonSerializer.Deserialize<Auth0TokenResponse>(json);
+        return result?.AccessToken;
         }
         catch (Exception ex)
         {
@@ -46,15 +45,13 @@ public class Auth0TokenService
             return null;
         }
     }
-    }
+}
 
-    public record Auth0TokenResponse(
-            [property: System.Text.Json.Serialization.JsonPropertyName("access_token")]
+public record Auth0TokenResponse(
+        [property: System.Text.Json.Serialization.JsonPropertyName("access_token")]
         string AccessToken,
-            [property: System.Text.Json.Serialization.JsonPropertyName("token_type")]
+        [property: System.Text.Json.Serialization.JsonPropertyName("token_type")]
         string TokenType,
-            [property: System.Text.Json.Serialization.JsonPropertyName("expires_in")]
-        int ExpiresIn,
-            [property: System.Text.Json.Serialization.JsonPropertyName("refresh_token")]
-        string? RefreshToken = null
-    );
+        [property: System.Text.Json.Serialization.JsonPropertyName("expires_in")]
+        int ExpiresIn
+);
