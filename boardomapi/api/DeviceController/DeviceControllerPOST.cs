@@ -9,7 +9,9 @@ namespace boardomapi.Api.DeviceController;
 public partial class DeviceController
 {
   [HttpPost("add")]
-  public async Task<IActionResult> AddDeviceAsync([FromBody] AddDeviceRequest request)
+  public async Task<IActionResult> AddDeviceAsync(
+    [FromBody] AddDeviceRequest request,
+    [FromServices] Auth0TokenService tokenService)
   {
     if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.FriendlyName))
       return BadRequest(new { error = "DeviceId and FriendlyName are required" });
@@ -34,11 +36,16 @@ public partial class DeviceController
       FriendlyName = request.FriendlyName,
       UserId = GetUserId()
     };
-
+    
     _db.Devices.Add(device);
     await _db.SaveChangesAsync();
 
-    return Created($"/device/{device.DeviceId}", new { message = "Device registered", deviceId = device.DeviceId, friendlyName = device.FriendlyName });
+    return Created($"/device/{device.DeviceId}", new
+    {
+      message = "Device registered",
+      deviceId = device.DeviceId,
+      friendlyName = device.FriendlyName,
+    });
   }
 
   [AllowAnonymous]
@@ -52,36 +59,18 @@ public partial class DeviceController
       return error;
 
     device!.LastHeartbeat = DateTime.UtcNow;
+    
+  // Always get a fresh token via client_credentials
+  var accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
+  if (string.IsNullOrWhiteSpace(accessToken))
+    return BadRequest(new { error = "Failed to obtain access token" });
 
-    string? accessToken = null;
-    string? newRefreshToken = null;
+  await _db.SaveChangesAsync();
 
-    // If device sent a refresh token, use it; otherwise fall back to client_credentials
-    if (!string.IsNullOrWhiteSpace(request.RefreshToken))
-    {
-      var tokenResult = await tokenService.RefreshAccessTokenAsync(request.RefreshToken);
-      if (tokenResult.HasValue)
-      {
-        accessToken = tokenResult.Value.AccessToken;
-        newRefreshToken = tokenResult.Value.NewRefreshToken ?? request.RefreshToken;
-
-        // Update stored refresh token if it was rotated
-        if (!string.IsNullOrWhiteSpace(newRefreshToken))
-          device.RefreshToken = newRefreshToken;
-      }
-    }
-
-    // Fallback to client_credentials if refresh token didn't work
-    if (string.IsNullOrWhiteSpace(accessToken))
-      accessToken = await tokenService.GetTokenForArduinoAsync(device.UserId);
-
-    await _db.SaveChangesAsync();
-
-    return Ok(new
-    {
-      success = true,
-      accesstoken = accessToken,
-      refreshtoken = newRefreshToken ?? request.RefreshToken  // Send back for device to store
-    });
+  return Ok(new
+  {
+    success = true,
+    accesstoken = accessToken
+  });
   }
 }
