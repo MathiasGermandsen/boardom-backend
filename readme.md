@@ -1,7 +1,7 @@
 # Boardom API
 
 <!-- Add your ER diagram here -->
-![Database ER Diagram](docs/images/billede.png)
+![Database ER Diagram](boardomapi/docs/images/billede.png)
 
 > A .NET 8 Web API for managing IoT devices and sensor data with PostgreSQL.
 
@@ -92,12 +92,12 @@
    }
    ```
 
-   | Key | Required | Description |
-   | --- | :------: | --- |
-   | `ConnectionStrings:DefaultConnection` | **Yes** | PostgreSQL connection string. The app will refuse to start without it. |
-   | `CleanupJob:IntervalDays` | No | Days between soft-delete cleanup runs (default: `30`). |
-   | `CleanupJob:IntervalMinutes` | No | Set to a number to override `IntervalDays` with a minutes-based interval. Useful for local testing. Set to `null` in production. |
-   | `CORS_ORIGINS` | No | Comma-separated list of allowed CORS origins (e.g. `https://app.example.com,https://admin.example.com`). When not set, all origins are allowed. Can also be set as an environment variable. |
+   | Key                                   | Required | Description                                                                                                                                                                                 |
+   | ------------------------------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `ConnectionStrings:DefaultConnection` | **Yes**  | PostgreSQL connection string. The app will refuse to start without it.                                                                                                                      |
+   | `CleanupJob:IntervalDays`             |    No    | Days between soft-delete cleanup runs (default: `30`).                                                                                                                                      |
+   | `CleanupJob:IntervalMinutes`          |    No    | Set to a number to override `IntervalDays` with a minutes-based interval. Useful for local testing. Set to `null` in production.                                                            |
+   | `CORS_ORIGINS`                        |    No    | Comma-separated list of allowed CORS origins (e.g. `https://app.example.com,https://admin.example.com`). When not set, all origins are allowed. Can also be set as an environment variable. |
 
    > **Note:** In Development mode the app automatically applies pending EF Core migrations on startup. In Production you must run migrations manually.
 
@@ -231,10 +231,10 @@
 
 A background service (`SoftDeleteCleanupJob`) runs on a recurring schedule and permanently removes all `Device` and `Group` records where `IsDeleted` is `true`.
 
-| Setting | Description | Default |
-| --- | --- | --- |
-| `CleanupJob:IntervalDays` | Interval in days between cleanup runs | `30` |
-| `CleanupJob:IntervalMinutes` | Override interval in minutes (takes priority over `IntervalDays` when set) | `null` |
+| Setting                      | Description                                                                | Default |
+| ---------------------------- | -------------------------------------------------------------------------- | ------- |
+| `CleanupJob:IntervalDays`    | Interval in days between cleanup runs                                      | `30`    |
+| `CleanupJob:IntervalMinutes` | Override interval in minutes (takes priority over `IntervalDays` when set) | `null`  |
 
 **How it works:**
 1. The job starts when the application launches and waits for the configured interval.
