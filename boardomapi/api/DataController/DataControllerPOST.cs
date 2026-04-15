@@ -1,5 +1,6 @@
 using boardomapi.Database;
 using boardomapi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace boardomapi.Api.DataController;
 
 public partial class DataController
 {
+  [AllowAnonymous]
   [HttpPost("sensorData")]
   public async Task<IActionResult> PostSensorData([FromBody] SensorDataRequest request)
   {
