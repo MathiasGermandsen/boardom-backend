@@ -78,7 +78,7 @@ var (device, error) = await FindDeviceByIdOnlyOrErrorAsync(request.DeviceId);
     {
       userId = device.UserId,
       success = true,
-      accesstoken = accessToken
+      accessToken = accessToken
     });
   }
 }
