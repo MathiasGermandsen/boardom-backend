@@ -9,7 +9,7 @@ namespace boardomapi.Api.DataController;
 
 [Authorize]
 [ApiController]
-[Microsoft.AspNetCore.Components.Route("[controller]")]
+[Microsoft.AspNetCore.Mvc.Route("[controller]")]
 public partial class DataController : ControllerBase
 {
   private readonly AppDbContext _db;
