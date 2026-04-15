@@ -3,12 +3,23 @@
 <!-- Add your ER diagram here -->
 ![Database ER Diagram](boardomapi/docs/images/billede.png)
 
-> A .NET 8 Web API for managing IoT devices and sensor data with PostgreSQL.
+> A .NET 8 Web API for managing IoT devices and sensor data with PostgreSQL — powering the [Boardom Dashboard](https://boardom-dashboard.mercantec.tech/).
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Dokploy](https://img.shields.io/badge/Dokploy-Ready-6C47FF)](https://dokploy.com/)
+
+## About the Project
+
+Boardom is a real-time household sensor monitoring system. The full project consists of two repositories:
+
+| Repository | Description | URL |
+| --- | --- | --- |
+| **Backend** | API and database (this repo) | https://github.com/MathiasGermandsen/boardom-backend.git |
+| **Frontend** | Blazor Server dashboard | https://github.com/MathiasGermandsen/boardom-frontend.git |
+
+The frontend provides live device monitoring, analytics with historical charts, device and group management, and Auth0 authentication — all powered by this API.
 
 ---
 
@@ -62,13 +73,13 @@
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone both repositories**
    ```bash
-   git clone https://github.com/yourusername/boardomapi.git
-   cd boardomapi
+   git clone https://github.com/MathiasGermandsen/boardom-backend.git
+   git clone https://github.com/MathiasGermandsen/boardom-frontend.git
    ```
 
-2. **Configure `appsettings.json`**
+2. **Configure the backend**
 
    Edit `boardomapi/appsettings.json` with the full configuration below. Replace the placeholder values with your own:
 
@@ -92,24 +103,28 @@
    }
    ```
 
-   | Key                                   | Required | Description                                                                                                                                                                                 |
-   | ------------------------------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | `ConnectionStrings:DefaultConnection` | **Yes**  | PostgreSQL connection string. The app will refuse to start without it.                                                                                                                      |
-   | `CleanupJob:IntervalDays`             |    No    | Days between soft-delete cleanup runs (default: `30`).                                                                                                                                      |
-   | `CleanupJob:IntervalMinutes`          |    No    | Set to a number to override `IntervalDays` with a minutes-based interval. Useful for local testing. Set to `null` in production.                                                            |
-   | `CORS_ORIGINS`                        |    No    | Comma-separated list of allowed CORS origins (e.g. `https://app.example.com,https://admin.example.com`). When not set, all origins are allowed. Can also be set as an environment variable. |
+   | Key | Required | Description |
+   | --- | :------: | --- |
+   | `ConnectionStrings:DefaultConnection` | **Yes** | PostgreSQL connection string. The app will refuse to start without it. |
+   | `CleanupJob:IntervalDays` | No | Days between soft-delete cleanup runs (default: `30`). |
+   | `CleanupJob:IntervalMinutes` | No | Set to a number to override `IntervalDays` with a minutes-based interval. Useful for local testing. Set to `null` in production. |
+   | `CORS_ORIGINS` | No | Comma-separated list of allowed CORS origins (e.g. `https://app.example.com,https://admin.example.com`). When not set, all origins are allowed. Can also be set as an environment variable. |
 
    > **Note:** In Development mode the app automatically applies pending EF Core migrations on startup. In Production you must run migrations manually.
 
-3. **Run the application**
+3. **Run the backend**
    ```bash
-   cd boardomapi
+   cd boardom-backend/boardomapi
    dotnet run
    ```
 
 4. **Open Swagger UI**
    
    Navigate to: [http://localhost:5248/swagger](http://localhost:5248/swagger)
+
+5. **Start the frontend** (optional)
+
+   See the [frontend repository](https://github.com/MathiasGermandsen/boardom-frontend.git) for setup instructions. Once both stacks are running, the dashboard is available at `http://localhost:13000`.
 
 ---
 
@@ -231,10 +246,10 @@
 
 A background service (`SoftDeleteCleanupJob`) runs on a recurring schedule and permanently removes all `Device` and `Group` records where `IsDeleted` is `true`.
 
-| Setting                      | Description                                                                | Default |
-| ---------------------------- | -------------------------------------------------------------------------- | ------- |
-| `CleanupJob:IntervalDays`    | Interval in days between cleanup runs                                      | `30`    |
-| `CleanupJob:IntervalMinutes` | Override interval in minutes (takes priority over `IntervalDays` when set) | `null`  |
+| Setting | Description | Default |
+| --- | --- | --- |
+| `CleanupJob:IntervalDays` | Interval in days between cleanup runs | `30` |
+| `CleanupJob:IntervalMinutes` | Override interval in minutes (takes priority over `IntervalDays` when set) | `null` |
 
 **How it works:**
 1. The job starts when the application launches and waits for the configured interval.
