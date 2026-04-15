@@ -10,14 +10,18 @@ public partial class DataController
   [HttpPost("sensorData")]
   public async Task<IActionResult> PostSensorData([FromBody] SensorDataRequest request)
   {
+    _logger.LogInformation("sensor data POST received for device: {DeviceId}", request.DeviceId);
+
     if (string.IsNullOrWhiteSpace(request.DeviceId))
     {
+      _logger.LogWarning("DeviceId Is missing");
       return BadRequest(new { error = "DeviceId is required" });
     }
 
-    var deviceExists = await _db.Devices.IgnoreQueryFilters().AnyAsync(d => d.DeviceId == request.DeviceId && d.UserId == GetUserId());
+    var deviceExists = await _db.Devices.IgnoreQueryFilters().AnyAsync(d => d.DeviceId == request.DeviceId);
     if (!deviceExists)
     {
+      _logger.LogWarning("Device not found: {DeviceId}", request.DeviceId);
       return NotFound(new { error = "Device not found", deviceId = request.DeviceId });
     }
 
@@ -33,6 +37,9 @@ public partial class DataController
 
     _db.SensorReadings.Add(sensorData);
     await _db.SaveChangesAsync();
+
+    _logger.LogInformation("Sensor data saved - DeviceId: {DeviceId}, RecordId: {RecordId}", 
+    request.DeviceId, sensorData.PKey);
 
     return Created($"/data/{sensorData.PKey}", new
     {
