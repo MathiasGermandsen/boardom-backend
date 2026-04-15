@@ -1,7 +1,7 @@
 # Boardom API
 
 <!-- Add your ER diagram here -->
-![Database ER Diagram](docs/images/billede.png)
+![Database ER Diagram](boardomapi/docs/images/billede.png)
 
 > A .NET 8 Web API for managing IoT devices and sensor data with PostgreSQL — powering the [Boardom Dashboard](https://boardom-dashboard.mercantec.tech/).
 
