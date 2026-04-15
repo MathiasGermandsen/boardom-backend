@@ -12,18 +12,18 @@ public partial class DataController
   [HttpPost("sensorData")]
   public async Task<IActionResult> PostSensorData([FromBody] SensorDataRequest request)
   {
-    _logger.LogInformation("sensor data POST received for device: {DeviceId}", request.DeviceId);
+    Console.WriteLine($"sensor data POST received for device: {request.DeviceId}");
 
     if (string.IsNullOrWhiteSpace(request.DeviceId))
     {
-      _logger.LogWarning("DeviceId Is missing");
+      Console.WriteLine($"DeviceId Is missing");
       return BadRequest(new { error = "DeviceId is required" });
     }
 
     var deviceExists = await _db.Devices.IgnoreQueryFilters().AnyAsync(d => d.DeviceId == request.DeviceId);
     if (!deviceExists)
     {
-      _logger.LogWarning("Device not found: {DeviceId}", request.DeviceId);
+      Console.WriteLine($"sensor data POST received for device: {request.DeviceId}");
       return NotFound(new { error = "Device not found", deviceId = request.DeviceId });
     }
 
